@@ -3,14 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def find_BMI(height, weight):
-
-    output = weight / (height**2)
-    for w in weight:
-        for h in height:
-
-            if abs(w - h*h) < 1:
-                print(w, h, end=':::')
-                print(abs(w - h*h))
+    output = weight / (height*height)
+    pd.set_option('display.max_rows', None)
+    print(output)
     return output 
 
 def clean_data():
@@ -28,9 +23,18 @@ def clean_data():
     form_1_df_cleaned['Body Mass (kg):'] = form_1_df_cleaned['Body Mass (kg):'].astype(str).str.replace('kg','').astype(float)
     form_2_df_cleaned['Body Mass (kg):'] = form_2_df_cleaned['Body Mass (kg):'].astype(str).str.replace('kg','').astype(float)
 
+    # Normalizing height measurements for those who inputted their height in centimetres.
+    form_1_df_cleaned.loc[form_1_df_cleaned['Height (m):'] > 10, 'Height (m):'] /= 100
+    form_2_df_cleaned.loc[form_2_df_cleaned['Height (m):'] > 10, 'Height (m):'] /= 100
+
     # Adding a new column to the DataFrames, BMI.
-    form_1_df_cleaned['BMI'] = find_BMI(form_1_df_cleaned['Height (m):'], form_1_df_cleaned['Body Mass (kg):'])
-    form_2_df_cleaned['BMI'] = find_BMI(form_2_df_cleaned['Height (m):'], form_2_df_cleaned['Body Mass (kg):'])
+    heights_form_1 = form_1_df_cleaned['Height (m):']
+    body_masses_form_1 = form_1_df_cleaned['Body Mass (kg):']
+    form_1_df_cleaned['BMI'] = find_BMI(heights_form_1, body_masses_form_1)
+
+    heights_form_2 = form_2_df_cleaned['Height (m):']
+    body_masses_form_2 = form_2_df_cleaned['Body Mass (kg):']
+    form_2_df_cleaned['BMI'] = find_BMI(heights_form_2, body_masses_form_2)
 
     # Stripping the cleaned DataFrames of unneccessary attributes.
     form_1_df_cleaned = form_1_df_cleaned[['BMI', 'IPAQ MET.min.wk-1']]
@@ -45,20 +49,20 @@ def clean_data():
     return output
 
 def plot_data(df):
-    bmi_axis = df['BMI']
-    met_axis = df['IPAQ MET.min.wk-1']
+    bmi_data = df['BMI']
+    met_data = df['IPAQ MET.min.wk-1']
 
     # Plot a scatter plot of the BMI and MET.min per week data.
     plt.xlabel('BMI')
     plt.ylabel('MET.min per week')
-    plt.scatter(bmi_axis, met_axis)
+    plt.scatter(bmi_data, met_data)
 
     # Plot a line of best fit and title the plot with
     # the slope and the intercept of the line of best fit.
-    slope, intercept = np.polyfit(bmi_axis, met_axis, 1)
-    regression_function = slope * bmi_axis + intercept
+    slope, intercept = np.polyfit(bmi_data, met_data, 1)
+    regression_function = slope * bmi_data + intercept
     plt.title(f'Slope={round(slope,2)}, Intercept={round(intercept,2)}')
-    plt.plot(bmi_axis, regression_function, color='r')
+    plt.plot(bmi_data, regression_function, color='r')
 
     plt.show()
     
