@@ -4,8 +4,6 @@ import numpy as np
 
 def find_BMI(height, weight):
     output = weight / (height*height)
-    pd.set_option('display.max_rows', None)
-    print(output)
     return output 
 
 def clean_data():
@@ -39,6 +37,16 @@ def clean_data():
     # Stripping the cleaned DataFrames of unneccessary attributes.
     form_1_df_cleaned = form_1_df_cleaned[['BMI', 'IPAQ MET.min.wk-1']]
     form_2_df_cleaned = form_2_df_cleaned[['BMI', 'IPAQ MET.min.wk-1']]
+
+    # Dropping rows where the BMI is too low. This filters out erroneous
+    # input, for example, where the body masses have been mistaken by the
+    # students as the heights.
+    form_1_df_cleaned.drop(
+        form_1_df_cleaned[form_1_df_cleaned['BMI'] < 10].index, inplace=True
+    )
+    form_2_df_cleaned.drop(
+        form_2_df_cleaned[form_2_df_cleaned['BMI'] < 10].index, inplace=True
+    )
 
     # Sorting the DataFrames by BMI in ascending orders.
     form_1_df_cleaned = form_1_df_cleaned.sort_values(by='BMI', ascending=True)
